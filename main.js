@@ -46,7 +46,6 @@ global.prefix = new RegExp('^[' + (opts['prefix'] || '*/i!#$%+£¢€¥^°=¶∆
 
 //news
 const { MongoClient } = require('mongodb');
-const fs = require('fs');
 
 // MongoDB connection URL
 const mongoUrl = process.env.MONGODB_URL || 'mongodb+srv://Kimoo:Kimoo@kimoo.3ayrn.mongodb.net/?retryWrites=true&w=majority&appName=Kimoo';
