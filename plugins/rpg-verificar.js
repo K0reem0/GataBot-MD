@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import uploadImage from '../src/libraries/uploadImage.js'; // Ensure this is the correct path
 
 let handler = async (m, { conn, text, args, groupMetadata, usedPrefix, command }) => {
