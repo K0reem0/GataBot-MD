@@ -45,113 +45,143 @@ global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse()
 global.prefix = new RegExp('^[' + (opts['prefix'] || '*/i!#$%+£¢€¥^°=¶∆×÷π√✓©®&.\\-.@').replace(/[|\\{}()[\]^$+*.\-\^]/g, '\\$&') + ']')
 
 //news
-const databasePath = path.join(__dirname, 'database') 
-if (!fs.existsSync(databasePath)) fs.mkdirSync(databasePath)
+const { MongoClient } = require('mongodb');
+const fs = require('fs');
 
-const usersPath = path.join(databasePath, 'users')
-const chatsPath = path.join(databasePath, 'chats')
-const settingsPath = path.join(databasePath, 'settings')
-const msgsPath = path.join(databasePath, 'msgs')
-const stickerPath = path.join(databasePath, 'sticker')
+// MongoDB connection URL
+const mongoUrl = process.env.MONGODB_URL || 'mongodb+srv://Kimoo:Kimoo@kimoo.3ayrn.mongodb.net/?retryWrites=true&w=majority&appName=Kimoo';
+const dbName = 'Kimoo'; // Replace with your database name
+
+// Initialize MongoDB client
+let client;
+let db;
+
+async function connectToMongoDB() {
+  client = new MongoClient(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+  await client.connect();
+  db = client.db(dbName);
+}
+
+// Ensure directories exist (optional, for backward compatibility)
+const databasePath = path.join(__dirname, 'database');
+if (!fs.existsSync(databasePath)) fs.mkdirSync(databasePath);
+
+const usersPath = path.join(databasePath, 'users');
+const chatsPath = path.join(databasePath, 'chats');
+const settingsPath = path.join(databasePath, 'settings');
+const msgsPath = path.join(databasePath, 'msgs');
+const stickerPath = path.join(databasePath, 'sticker');
 const statsPath = path.join(databasePath, 'stats');
 
 [usersPath, chatsPath, settingsPath, msgsPath, stickerPath, statsPath].forEach((dir) => {
-if (!fs.existsSync(dir)) fs.mkdirSync(dir)
-})
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+});
 
-function getFilePath(basePath, id) {
-return path.join(basePath, `${id}.json`)
-}
-
+// Initialize global database object
 global.db = {
-data: {
-users: {},
-chats: {},
-settings: {},
-msgs: {},
-sticker: {},
-stats: {},
-},
-READ: false,
+  data: {
+    users: {},
+    chats: {},
+    settings: {},
+    msgs: {},
+    sticker: {},
+    stats: {},
+  },
+  READ: false,
 };
 
+// Load data from MongoDB
 global.loadDatabase = async function loadDatabase() {
-if (global.db.READ) {
-return new Promise((resolve) => {
-const interval = setInterval(() => {
-if (!global.db.READ) {
-clearInterval(interval);
-resolve(global.db.data);
-}}, 1000);
-});
-}
+  if (global.db.READ) {
+    return new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (!global.db.READ) {
+          clearInterval(interval);
+          resolve(global.db.data);
+        }
+      }, 1000);
+    });
+  }
 
-global.db.READ = true;
-try {
-const loadFiles = async (dirPath, targetObj, ignorePatterns = []) => {
-const files = fs.readdirSync(dirPath)
-for (const file of files) {
-const id = path.basename(file, '.json')
+  global.db.READ = true;
+  try {
+    await connectToMongoDB();
 
-if (ignorePatterns.some(pattern => id.includes(pattern))) {
-continue; 
-}
-const db = new Low(new JSONFile(getFilePath(dirPath, id)))
-await db.read()
-db.data = db.data || {};
-targetObj[id] = { ...targetObj[id], ...db.data }
-}};
+    const loadCollection = async (collectionName, targetObj, ignorePatterns = []) => {
+      const collection = db.collection(collectionName);
+      const documents = await collection.find({}).toArray();
+      for (const doc of documents) {
+        const id = doc._id.toString();
+        if (ignorePatterns.some(pattern => id.includes(pattern))) {
+          continue;
+        }
+        targetObj[id] = { ...targetObj[id], ...doc };
+      }
+    };
 
-await Promise.all([loadFiles(usersPath, global.db.data.users, ['@newsletter', 'lid', '@g.us']), 
-loadFiles(chatsPath, global.db.data.chats, ['status@broadcast']), 
-loadFiles(settingsPath, global.db.data.settings),
-loadFiles(msgsPath, global.db.data.msgs),
-loadFiles(stickerPath, global.db.data.sticker),
-loadFiles(statsPath, global.db.data.stats),
-]);
-} catch (error) {
-console.error('Error loading database:', error);
-} finally {
-global.db.READ = false
-}};
+    await Promise.all([
+      loadCollection('users', global.db.data.users, ['@newsletter', 'lid', '@g.us']),
+      loadCollection('chats', global.db.data.chats, ['status@broadcast']),
+      loadCollection('settings', global.db.data.settings),
+      loadCollection('msgs', global.db.data.msgs),
+      loadCollection('sticker', global.db.data.sticker),
+      loadCollection('stats', global.db.data.stats),
+    ]);
+  } catch (error) {
+    console.error('Error loading database:', error);
+  } finally {
+    global.db.READ = false;
+  }
+};
 
+// Save data to MongoDB
 global.db.save = async function saveDatabase() {
-if (global.db.READ) {
-await new Promise((resolve) => {
-const interval = setInterval(() => {
-if (!global.db.READ) {
-clearInterval(interval)
-resolve()
-}}, 100)
-});
-}
+  if (global.db.READ) {
+    await new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (!global.db.READ) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 100);
+    });
+  }
 
-global.db.READ = true
-try {
-const saveFiles = async (dirPath, dataObj, ignorePatterns = []) => {
-for (const [id, data] of Object.entries(dataObj)) {
-if (ignorePatterns.some(pattern => id.includes(pattern))) {
-continue; 
-}
+  global.db.READ = true;
+  try {
+    await connectToMongoDB();
 
-const db = new Low(new JSONFile(getFilePath(dirPath, id)))
-db.data = data
-await db.write()
-}}
+    const saveCollection = async (collectionName, dataObj, ignorePatterns = []) => {
+      const collection = db.collection(collectionName);
+      for (const [id, data] of Object.entries(dataObj)) {
+        if (ignorePatterns.some(pattern => id.includes(pattern))) {
+          continue;
+        }
+        await collection.updateOne(
+          { _id: id },
+          { $set: data },
+          { upsert: true }
+        );
+      }
+    };
 
-await Promise.all([saveFiles(usersPath, global.db.data.users, ['@newsletter', 'lid', '@g.us']), 
-saveFiles(chatsPath, global.db.data.chats, ['status@broadcast']), 
-saveFiles(settingsPath, global.db.data.settings),
-saveFiles(msgsPath, global.db.data.msgs),
-saveFiles(stickerPath, global.db.data.sticker),
-saveFiles(statsPath, global.db.data.stats),
-]);
-} catch (error) {
-console.error('Error saving database:', error)
-} finally {
-global.db.READ = false
-}}
-loadDatabase()
+    await Promise.all([
+      saveCollection('users', global.db.data.users, ['@newsletter', 'lid', '@g.us']),
+      saveCollection('chats', global.db.data.chats, ['status@broadcast']),
+      saveCollection('settings', global.db.data.settings),
+      saveCollection('msgs', global.db.data.msgs),
+      saveCollection('sticker', global.db.data.sticker),
+      saveCollection('stats', global.db.data.stats),
+    ]);
+  } catch (error) {
+    console.error('Error saving database:', error);
+  } finally {
+    global.db.READ = false;
+  }
+};
+
+// Load the database on startup
+loadDatabase();
 
 /*global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile('database.json'))
 global.DATABASE = global.db; 
