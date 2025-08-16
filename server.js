@@ -1,70 +1,47 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import { fileURLToPath } from 'url';
-import path from 'path';
-import fetch from 'node-fetch';
+import express from 'express'
+import { createServer } from 'http'
+import path from 'path'
+import { Socket } from 'socket.io'
+import { toBuffer } from 'qrcode'
+import fetch from 'node-fetch'
 
-// Importing the modules
-import pairRouter from './pair.js';
-import qrRouter from './qr.js';
-import QRCode from 'qrcode';
+function connect(conn, PORT) {
+let app = global.app = express()
+console.log(app)
+let server = global.server = createServer(app)
+let _qr = 'invalid'
 
-// إنشاء التطبيق
-const app = express();
+conn.ev.on('connection.update', function appQR({ qr }) {
+if (qr) _qr = qr
+})
 
-// Resolve the current directory path in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+app.use(async (req, res) => {
+res.setHeader('content-type', 'image/png')
+res.end(await toBuffer(_qr))
+})
 
-const PORT = process.env.PORT || 8000;
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GITHUB_USERNAME = process.env.GITHUB_USERNAME;
-const GITHUB_REPO = process.env.GITHUB_REPO;
+server.listen(PORT, () => {
+console.log('App listened on port', PORT)
+if (opts['keepalive']) keepAlive()
+})}
 
-import('events').then(events => {
-    events.EventEmitter.defaultMaxListeners = 500;
-});
-
-// Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(__dirname));
-
-// Routes
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'pair.html'));
-});
-
-app.use('/pair', pairRouter);
-app.use('/qr', qrRouter);
-
-// ===== pipeEmit =====
 function pipeEmit(event, event2, prefix = '') {
-    let old = event.emit;
-    event.emit = function (event, ...args) {
-        old.emit(event, ...args);
-        event2.emit(prefix + event, ...args);
-    };
-    return {
-        unpipeEmit() {
-            event.emit = old;
-        }
-    };
+let old = event.emit
+event.emit = function (event, ...args) {
+old.emit(event, ...args)
+event2.emit(prefix + event, ...args)
 }
+return {
+unpipeEmit() {
+event.emit = old
+}}}
 
-// ===== keepAlive =====
 function keepAlive() {
-    const url = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
-    if (/(\/\/|.)undefined./.test(url)) return;
-    setInterval(() => {
-        fetch(url).catch(console.error);
-    }, 5 * 1000 * 60); // كل 5 دقائق
-}
+const url = https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co
+if (/(//|.)undefined./.test(url)) return
+setInterval(() => {
+fetch(url).catch(console.error)
+}, 5 * 1000 * 60)}
 
-// تشغيل السيرفر
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    if (process.env.KEEPALIVE === 'true') {
-        keepAlive();
-    }
-});
+export default connect
+
