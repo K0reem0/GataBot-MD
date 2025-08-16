@@ -1,4 +1,4 @@
-import { prepareWAMessageMedia, generateWAMessageFromContent } from 'baileys';
+import { prepareWAMessageMedia, generateWAMessageFromContent } from '@whiskeysockets/baileys';
 import fs from 'fs';
 import axios from 'axios';
 import path from 'path';
@@ -66,7 +66,7 @@ let handler = async (m, { conn }) => {
                 },
             },
         },
-        { userJid: conn.user.jid, quoted: m }
+        { quoted: m }
     );
 
     // إرسال الرسالة
