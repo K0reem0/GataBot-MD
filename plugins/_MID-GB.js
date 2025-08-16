@@ -1,4 +1,4 @@
-import { es, en } from '../lib/multi-language/_default.js' 
+import { ar, es, en } from '../lib/multi-language/_default.js' 
 
 let handler = m => m
 handler.before = async function (m, { conn }) {
@@ -9,6 +9,8 @@ if (idioma == "es") {
 MID_GB = es
 } else if (idioma == "en") {
 MID_GB = en
+} else if (idioma == "ar") {
+MID_GB = ar
 } else {
 MID_GB = mid || es
 }
