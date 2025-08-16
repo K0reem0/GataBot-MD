@@ -10,7 +10,7 @@ import '../config.js'
 export async function before(m, { conn, text }) {	
 global.key = ''
 let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? this.user.jid : m.sender
-let pp = await this.profilePictureUrl(who, 'image').catch(_ => "https://cdn.dorratz.com/files/1738785861212.jpg")
+let pp = await this.profilePictureUrl(who, 'image').catch(_ => "https://files.catbox.moe/yjj0x6.jpg")
 
 // Fake
 global.fkontak = { "key": { "participants":"0@s.whatsapp.net", "remoteJid": "status@broadcast", "fromMe": false, "id": "Halo" }, "message": { "contactMessage": { "vcard": `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` }}, "participant": "0@s.whatsapp.net" }
@@ -20,21 +20,21 @@ global.fake = { contextInfo: { mentionedJid: await this.parseMention(text), forw
 
 global.fake2 = { contextInfo: { mentionedJid: await this.parseMention(text), forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: channelRD.id, serverMessageId: '', newsletterName: channelRD.name }, externalAdReply: { title: wm, body: vs, mediaType: 1, renderLargerThumbnail: true, previewType: `PHOTO`, thumbnailUrl: pp, sourceUrl: accountsgb }}}
   
-const estilo = { key: {  fromMe: false, participant: `0@s.whatsapp.net`, ...(m.chat ? { remoteJid: "5219992095479-1625305606@g.us" } : {}) }, message: { orderMessage: { itemCount : -999999, status: 1, surface : 1, message: 'Super Bot WhatsApp', orderTitle: 'Bang', thumbnail: gataMenu, sellerJid: '0@s.whatsapp.net' }}}
-const estiloaudio = { key: {  fromMe: false, participant: `0@s.whatsapp.net`, ...(m.chat ? { remoteJid: "5219992095479-1625305606@g.us" } : {}) }, message: { "audioMessage": { "mimetype":"audio/ogg; codecs=opus", "seconds": "99569", "ptt": "true"   
+const estilo = { key: {  fromMe: false, participant: `0@s.whatsapp.net`, ...(m.chat ? { remoteJid: "967779978859-1625305606@g.us" } : {}) }, message: { orderMessage: { itemCount : -999999, status: 1, surface : 1, message: 'Super Bot WhatsApp', orderTitle: 'Bang', thumbnail: gataMenu, sellerJid: '0@s.whatsapp.net' }}}
+const estiloaudio = { key: {  fromMe: false, participant: `0@s.whatsapp.net`, ...(m.chat ? { remoteJid: "967779978859-1625305606@g.us" } : {}) }, message: { "audioMessage": { "mimetype":"audio/ogg; codecs=opus", "seconds": "99569", "ptt": "true"   
 }}} 
 //let bottime = `${name} 𝗧𝗜𝗠𝗘: ${moment.tz('America/Bogota').format('HH:mm:ss')}`//America/Los_Angeles
 let ftroli = { key: { remoteJid: 'status@broadcast', participant: '0@s.whatsapp.net' }, message: { orderMessage: { itemCount: 99, status: 1, surface: 1, message: wm, orderTitle: wm, sellerJid: '0@s.whatsapp.net' } } }
 let fgif = {key: {participant : '0@s.whatsapp.net'}, message: {"videoMessage": { "title": wm, "h": `Hmm`, 'seconds': '999999999', 'gifPlayback': 'true', 'caption': bottime, 'jpegThumbnail': fs.readFileSync('./media/menus/Menu3.jpg')}}}
                              
 let enlace = { contextInfo: { externalAdReply: {title: wm + ' 🐈', body: 'support group' , sourceUrl: redesMenu, thumbnail: await(await fetch(gataMenu)).buffer() }}}
-let enlace2 = { contextInfo: { externalAdReply: { showAdAttribution: true, mediaUrl: yt, mediaType: 'VIDEO', description: '', title: wm, body: '😻 𝗦𝘂𝗽𝗲𝗿 𝗚𝗮𝘁𝗮𝗕𝗼𝘁-𝗠𝗗 - 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 ', thumbnailUrl: gataMenu, sourceUrl: accountsgb }}}
+let enlace2 = { contextInfo: { externalAdReply: { showAdAttribution: true, mediaUrl: yt, mediaType: 'VIDEO', description: '', title: wm, body: 'مرحبا هايسو هنا 🎀 ', thumbnailUrl: gataMenu, sourceUrl: accountsgb }}}
 let dos = [enlace, enlace2]  
-global.wait = "⌛ *`Cargando...`*\n*✪✦✦⊹⊹⊹⊹⊹⊹⊹⊹✪* `20%`"
-global.waitt = "⏳ *`Cargando....`*\n*✪✦✦✦✦⊹⊹⊹⊹⊹⊹✪* `40%`"
-global.waittt = "⌛ *`Cargando...`*\n*✪✦✦✦✦✦✦⊹⊹⊹⊹✪* `60%`"
-global.waitttt = "⏳ *`Cargando....`*\n*✪✦✦✦✦✦✦✦✦⊹⊹✪* `80%`"
-global.waittttt = "⌛ *`Procesando...`*\n*✪✦✦✦✦✦✦✦✦✦✦✪* `100%`"
+global.wait = "⌛ *`جار التحميل...`*\n*✪✦✦⊹⊹⊹⊹⊹⊹⊹⊹✪* `20%`"
+global.waitt = "⏳ *`جار التحميل....`*\n*✪✦✦✦✦⊹⊹⊹⊹⊹⊹✪* `40%`"
+global.waittt = "⌛ *`جار التحميل...`*\n*✪✦✦✦✦✦✦⊹⊹⊹⊹✪* `60%`"
+global.waitttt = "⏳ *`جار التحميل....`*\n*✪✦✦✦✦✦✦✦✦⊹⊹✪* `80%`"
+global.waittttt = "⌛ *`جار المعالجة...`*\n*✪✦✦✦✦✦✦✦✦✦✦✪* `100%`"
 global.destraba = `⏰DESTRABA⏰*
 li.DESTRAVip.to
 2024 🦍💨
@@ -44,15 +44,15 @@ li.DESTRAVip.to
 }
 //export default handler
 
-global.bot = "wa.me/525577917106"
+global.bot = "wa.me/966546911270"
 global.canales = [canal1, canal2, canal3, canal4][Math.floor(Math.random() * 4)]
 global.welgata = [tk, ig, md, yt, paypal, fb, ths, asistencia][Math.floor(Math.random() * 8)]
 global.redesMenu = [all, canal1, canal2, canal3, canal4, md, ig, paypal, yt, asistencia, fb, tk][Math.floor(Math.random() * 12)]
 global.accountsgb = [all, canal1, canal2, canal3, canal4, tk, ig, yt, paypal, fb, ths, md, asistencia][Math.floor(Math.random() * 13)]
 global.cuentas = [grupo1, grupo2, grupo_collab1, grupo_collab2, grupo_collab3, grupo_collab4][Math.floor(Math.random() * 6)]
 
-global.canalIdGB = ["120363160031023229@newsletter", "120363169294281316@newsletter", "120363203805910750@newsletter", "120363302472386010@newsletter"]
-global.canalNombreGB = ["INFINITY-WA 💫", "GB - UPDATE 🐈", "Tips sobre GataBot 🤩", "NEW PROJECT: YartexBot-MD ✨"]
+global.canalIdGB = ["", "", "", ""]
+global.canalNombreGB = ["", "", "", ""]
 global.channelRD = await getRandomChannel()
 
 // Imágenes 
@@ -70,7 +70,7 @@ global.imagen11 = fs.readFileSync("./media/menus/img10.jpg")
 global.imagen12 = fs.readFileSync("./media/menus/img11.jpg")
 global.imagen13 = fs.readFileSync("./media/menus/img12.jpg")
 
-global.img = 'https://cdn.dorratz.com/files/1738785861212.jpg'
+global.img = 'https://files.catbox.moe/yjj0x6.jpg'
 global.img2 = img //'https://qu.ax/hjcB.jpg' 
 
 global.img3 = img //'https://qu.ax/zELg.jpg'  //prem
