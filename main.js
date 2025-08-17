@@ -3,7 +3,6 @@ import './config.js'
 import './plugins/_content.js'
 import { createRequire } from 'module'
 import path, { join } from 'path'
-import fs from 'fs';
 import {fileURLToPath, pathToFileURL} from 'url'
 import { platform } from 'process'
 import * as ws from 'ws'
