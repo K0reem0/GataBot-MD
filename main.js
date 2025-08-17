@@ -3,6 +3,7 @@ import './config.js'
 import './plugins/_content.js'
 import { createRequire } from 'module'
 import path, { join } from 'path'
+import fs from 'fs';
 import {fileURLToPath, pathToFileURL} from 'url'
 import { platform } from 'process'
 import * as ws from 'ws'
@@ -25,6 +26,8 @@ import store from './lib/store.js'
 import readline from 'readline'
 import NodeCache from 'node-cache' 
 import { gataJadiBot } from './plugins/jadibot-serbot.js';
+import LidResolver from './lib/LidResolver.js';
+import { initializeSubBots } from './lib/subBotManager.js';
 import pkg from 'google-libphonenumber'
 const { PhoneNumberUtil } = pkg
 const phoneUtil = PhoneNumberUtil.getInstance()
@@ -134,6 +137,50 @@ global.db.writeData = async function (category, id, data) {
   });
 };
 
+const lidsFile = path.join('./src/lidsresolve.json');
+// الكاش
+let lidsCache = {};
+
+// تحديث الكاش من الملف
+function updateLidsCache() {
+  try {
+    if (fs.existsSync(lidsFile)) {
+      let raw = fs.readFileSync(lidsFile, 'utf8');
+      lidsCache = JSON.parse(raw);
+    } else {
+      lidsCache = {};
+    }
+  } catch (e) {
+    console.error('خطأ بتحميل lidsresolve.json:', e);
+    lidsCache = {};
+  }
+}
+
+// استدعاء أول مرة
+updateLidsCache();
+
+// تحديث دوري كل 30 ثانية
+setInterval(updateLidsCache, 30 * 1000);
+
+// دالة المطابقة lid ↔ jid
+function resolveLidOrJid(id) {
+  if (!id) return null;
+
+  if (id.endsWith('@lid')) {
+    let lidKey = id.replace('@lid', '');
+    return lidsCache[lidKey]?.jid || null;
+  }
+
+  if (id.endsWith('@s.whatsapp.net')) {
+    // لو id جاي كـ jid
+    let match = Object.values(lidsCache).find(entry => entry.jid === id);
+    return match ? match.jid : id;
+  }
+
+  return id;
+}
+
+// تعديل loadDatabase
 global.db.loadDatabase = async function () {
   const loadPromises = Object.keys(collections).map(async (category) => {
     const docs = await new Promise((resolve, reject) => {
@@ -142,39 +189,48 @@ global.db.loadDatabase = async function () {
         resolve(docs);
       });
     });
-    const seenIds = new Set();
-    for (const doc of docs) {
-      const originalId = unsanitizeId(doc._id);
-      if (seenIds.has(originalId)) {
-        // Eliminar duplicados
-        await new Promise((resolve, reject) => {
-          collections[category].remove({ _id: doc._id }, {}, (err) => {
-            if (err) return reject(err);
-            resolve();
-          });
-        });
-      } else {
-        seenIds.add(originalId);
-        if (category === 'users' && (originalId.includes('@newsletter') || originalId.includes('lid'))) continue;
-        if (category === 'chats' && originalId.includes('@newsletter')) continue;
-        global.db.data[category][originalId] = unsanitizeObject(doc.data);
+
+    for (let doc of docs) {
+      let originalId = unsanitizeId(doc._id);
+
+      if (category === 'users' && (originalId.includes('@newsletter'))) continue;
+      if (category === 'chats' && originalId.includes('@newsletter')) continue;
+
+      // ✅ ربط lid مع jid عبر الكاش
+      if (category === 'users' && originalId.includes('lid')) {
+        let resolved = resolveLidOrJid(originalId);
+        if (resolved) {
+          global.db.data[category][resolved] = {
+            ...(global.db.data[category][resolved] || {}),
+            ...unsanitizeObject(doc.data)
+          };
+          continue;
+        }
       }
+
+      global.db.data[category][originalId] = unsanitizeObject(doc.data);
     }
   });
   await Promise.all(loadPromises);
 };
 
+// تعديل save
 global.db.save = async function () {
   const savePromises = [];
   for (const category of Object.keys(global.db.data)) {
     for (const [id, data] of Object.entries(global.db.data[category])) {
       if (Object.keys(data).length > 0) {
-        if (category === 'users' && (id.includes('@newsletter') || id.includes('lid'))) continue;
+        if (category === 'users' && id.includes('@newsletter')) continue;
         if (category === 'chats' && id.includes('@newsletter')) continue;
+
+        // ✅ دايم نخزن بالـ jid النهائي
+        let resolved = resolveLidOrJid(id);
+        let finalId = resolved || id;
+
         savePromises.push(
           new Promise((resolve, reject) => {
             collections[category].update(
-              { _id: sanitizeId(id) },
+              { _id: sanitizeId(finalId) },
               { $set: { data: sanitizeObject(data) } },
               { upsert: true },
               (err) => {
@@ -237,6 +293,127 @@ loadDatabase();/*
 //if (global.conns instanceof Array) {console.log('Conexiones ya inicializadas...');} else {global.conns = [];}
 
 /* ------------------------------------------------*/
+
+global.getAllCachedUsers = function() {
+  if (!global.lidResolver) return [];
+  return global.lidResolver.getAllUsers();
+};
+
+/**
+ * Obtener estadísticas del caché LID
+ */
+global.getLidStats = function() {
+  if (!global.lidResolver) return null;
+  return global.lidResolver.getStats();
+};
+
+/**
+ * Analizar y corregir números telefónicos en caché
+ */
+global.analyzePhoneNumbers = function() {
+  if (!global.lidResolver) return null;
+  return global.lidResolver.analyzePhoneNumbers();
+};
+
+/**
+ * Corregir automáticamente números telefónicos
+ */
+global.autoCorrectPhoneNumbers = function() {
+  if (!global.lidResolver) return null;
+  return global.lidResolver.autoCorrectPhoneNumbers();
+};
+
+/**
+ * Obtener usuarios por país
+ */
+global.getUsersByCountry = function() {
+  if (!global.lidResolver) return {};
+  return global.lidResolver.getUsersByCountry();
+};
+
+/**
+ * Validar si un string es un número telefónico
+ */
+global.validatePhoneNumber = function(phoneNumber) {
+  if (!global.lidResolver) return false;
+  return global.lidResolver.phoneValidator.isValidPhoneNumber(phoneNumber);
+};
+
+/**
+ * Detectar si un LID es realmente un número telefónico
+ */
+global.detectPhoneInLid = function(lidString) {
+  if (!global.lidResolver) return { isPhone: false };
+  return global.lidResolver.phoneValidator.detectPhoneInLid(lidString);
+};
+
+/**
+ * Forzar guardado del caché LID
+ */
+global.forceSaveLidCache = function() {
+  if (!global.lidResolver) return false;
+  global.lidResolver.forceSave();
+  return true;
+};
+
+/**
+ * Función para mostrar estadísticas del caché LID
+ */
+global.getLidCacheInfo = function() {
+  if (!global.lidResolver) {
+    return 'Sistema LID no inicializado';
+  }
+  
+  const stats = global.lidResolver.getStats();
+  const analysis = global.lidResolver.analyzePhoneNumbers();
+  
+  return `📱 *ESTADÍSTICAS DEL CACHÉ LID*
+
+📊 *General:*
+• Total de entradas: ${stats.total}
+• Entradas válidas: ${stats.valid}
+• No encontradas: ${stats.notFound}
+• Con errores: ${stats.errors}
+• En procesamiento: ${stats.processing}
+
+📞 *Números telefónicos:*
+• Detectados: ${stats.phoneNumbers}
+• Corregidos: ${stats.corrected}
+• Problemáticos: ${analysis.stats.phoneNumbersProblematic}
+
+🗂️ *Caché:*
+• Archivo: ${stats.cacheFile}
+• Existe: ${stats.fileExists ? 'Sí' : 'No'}
+• Cambios pendientes: ${stats.isDirty ? 'Sí' : 'No'}
+• Mapeos JID: ${stats.jidMappings}
+
+🌍 *Países detectados:*
+${Object.entries(global.lidResolver.getUsersByCountry())
+  .slice(0, 5)
+  .map(([country, users]) => `• ${country}: ${users.length} usuarios`)
+  .join('\n')}`;
+};
+
+/**
+ * Función para forzar corrección de números telefónicos
+ */
+global.forcePhoneCorrection = function() {
+  if (!global.lidResolver) {
+    return 'Sistema LID no inicializado';
+  }
+  
+  try {
+    const result = global.lidResolver.autoCorrectPhoneNumbers();
+    
+    if (result.corrected > 0) {
+      return `✅ Se corrigieron ${result.corrected} números telefónicos automáticamente.`;
+    } else {
+      return '✅ No se encontraron números telefónicos que requieran corrección.';
+    }
+  } catch (error) {
+    return `❌ Error en corrección automática: ${error.message}`;
+  }
+};
 
 global.creds = 'creds.json'
 global.authFile = 'GataBotSession'
