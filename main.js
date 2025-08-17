@@ -26,7 +26,6 @@ import readline from 'readline'
 import NodeCache from 'node-cache' 
 import { gataJadiBot } from './plugins/jadibot-serbot.js';
 import LidResolver from './lib/LidResolver.js';
-import { initializeSubBots } from './lib/subBotManager.js';
 import pkg from 'google-libphonenumber'
 const { PhoneNumberUtil } = pkg
 const phoneUtil = PhoneNumberUtil.getInstance()
