@@ -1144,7 +1144,10 @@ if (opts['gconly'] && !m.chat.endsWith('g.us')) return
 if (opts['swonly'] && m.chat !== 'status@broadcast') return
 if (typeof m.text !== 'string')
 m.text = ''
-	
+
+if (process.env.MODE && process.env.MODE.toLowerCase() === 'private' && !(isROwner || isOwner || isMods))
+          return;
+	  
 m.exp += Math.ceil(Math.random() * 10)
 let usedPrefix
 let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
