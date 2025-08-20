@@ -10,7 +10,7 @@ ${lenguajeGB['smsAfkM3']()}\n👉 *${(new Date - user.afk).toTimeString()}*`.tri
 user.afk = -1
 user.afkReason = ''
 }
-let jids = [...new Set([...(m.mentionedJid || []), ...(m.quoted ? [m.quoted.sender] : [])])]
+let jids = [...new Set([...(await m.mentionedJid || []), ...(m.quoted ? [m.quoted.sender] : [])])]
 for (let jid of jids) {
 let user = global.db.data.users[jid]
 if (!user)
