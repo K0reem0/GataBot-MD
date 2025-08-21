@@ -25,7 +25,7 @@ global.prems = []
 global.gataJadibts = true
 
 // Cambiar a false para usar el Bot desde el mismo numero del Bot.
-global.isBaileysFail = false
+global.isBaileysFail = true
 // • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
 
 // • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
