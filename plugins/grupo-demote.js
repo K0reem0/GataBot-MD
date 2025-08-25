@@ -4,12 +4,12 @@ const handler = async (m, { conn }) => {
     let texto = await m.mentionedJid;
     who = texto.length > 0 
       ? texto[0] 
-      : (m.quoted ? await m.quoted.sender : m.sender);
+      : (m.quoted ? await m.quoted.sender : null);
   } else {
     who = m.chat;
   }
 
-  if (!who) return conn.reply(m.chat, `منشن شخص`, m);
+  if (!who) return conn.reply(m.chat, `*منشن شخص*`, m);
 
   try {
     await conn.groupParticipantsUpdate(m.chat, [who], 'demote');
@@ -21,7 +21,7 @@ const handler = async (m, { conn }) => {
 
 handler.help = ['demote'].map(v => 'mention ' + v);
 handler.tags = ['group'];
-handler.command = /^(demote|خفض|تخفيض)$/i;
+handler.command = /^(demote|تخفيض|خفض)$/i;
 handler.group = true;
 handler.admin = true;
 handler.botAdmin = true;
