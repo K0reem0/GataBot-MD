@@ -4,7 +4,7 @@ const handler = async (m, { conn }) => {
     let texto = await m.mentionedJid;
     who = texto.length > 0 
       ? texto[0] 
-      : (m.quoted ? await m.quoted.sender : m.sender);
+      : (m.quoted ? await m.quoted.sender : null);
   } else {
     who = m.chat;
   }
