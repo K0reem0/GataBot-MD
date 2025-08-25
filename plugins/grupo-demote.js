@@ -1,29 +1,30 @@
-let handler = async (m, { conn,usedPrefix, text, command }) => {
-if(isNaN(text) && !text.match(/@/g)){
-	
-}else if(isNaN(text)) {
-var number = text.split`@`[1]
-}else if(!isNaN(text)) {
-var number = text
-}
-	
-if (!text && !m.quoted) return conn.sendButton(m.chat, wm, lenguajeGB['smsMalused3']() + `*${usedPrefix + command} @${global.owner[0][0]}*`, null, [[lenguajeGB.smsConMenu(), `${usedPrefix}menu`]], fkontak, m)
-if (number.length > 13 || (number.length < 11 && number.length > 0)) return conn.sendButton(m.chat, wm, lenguajeGB['smsDemott']() + `*${usedPrefix + command} @${global.owner[0][0]}*`, null, [[lenguajeGB.smsConMenu(), `${usedPrefix}menu`]], fkontak, m)
-  
-try {
-if(text) {
-var user = number + '@s.whatsapp.net'
-} else if(m.quoted.sender) {
-var user = m.quoted.sender
-} else if(m.mentionedJid) {
-var user = number + '@s.whatsapp.net'
-}} catch (e) {
-} finally {
-conn.groupParticipantsUpdate(m.chat, [user], 'demote')
-conn.reply(m.chat, lenguajeGB['smsAvisoEG']() + lenguajeGB['smsDemott3'](), fkontak, m)
-}}
-handler.command = /^(demote|quitarpoder|quitaradmin)$/i
-handler.group = true
-handler.admin = true
-handler.botAdmin = true
-export default handler
+const handler = async (m, { conn }) => {
+  let who;
+  if (m.isGroup) {
+    let texto = await m.mentionedJid;
+    who = texto.length > 0 
+      ? texto[0] 
+      : (m.quoted ? await m.quoted.sender : m.sender);
+  } else {
+    who = m.chat;
+  }
+
+  if (!who) return conn.reply(m.chat, `منشن شخص`, m);
+
+  try {
+    await conn.groupParticipantsUpdate(m.chat, [who], 'demote');
+    conn.reply(m.chat, '✅ *تمت إزالة الصلاحيات*', m);
+  } catch (e) {
+    conn.reply(m.chat, '❌ حدث خطأ أثناء التنزيل', m);
+  }
+};
+
+handler.help = ['demote'].map(v => 'mention ' + v);
+handler.tags = ['group'];
+handler.command = /^(demote|خفض|تخفيض)$/i;
+handler.group = true;
+handler.admin = true;
+handler.botAdmin = true;
+handler.fail = null;
+
+export default handler;
