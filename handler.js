@@ -1133,7 +1133,6 @@ if (opts['nyimak']) {
       m.text = '';
 	}
 
-m.sender = m.sender || m.participant || m.key?.participant || m.key?.remoteJid || '';
 const detectwhat = m.sender?.includes('@lid') ? '@lid' : '@s.whatsapp.net';
 const isROwner = [...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
 const isOwner = isROwner || m.fromMe
