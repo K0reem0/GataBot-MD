@@ -1,7 +1,8 @@
 const handler = async (m, { conn, args, groupMetadata }) => {
   let who;
   if (m.isGroup) {
-    who = m.mentionedJid?.[0] ?? (m.quoted ? await m.quoted.sender : m.sender);
+    let texto = await m.mentionedJid
+    who = texto.length > 0 ? texto[0] : (m.quoted ? await m.quoted.sender : m.sender)
   } else {
     who = m.chat;
   }
