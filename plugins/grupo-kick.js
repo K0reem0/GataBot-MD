@@ -1,35 +1,35 @@
-const handler = async (m, {conn, participants, usedPrefix, command}) => {  
-  const kicktext = `*مــنشـن الـشـخص !*`;
-  
-  if (!m.mentionedJid[0] && !m.quoted) return m.reply(kicktext, m.chat, {mentions: conn.parseMention(kicktext)});
-  
-  // رقم المالك
-  const ownerNumber = "966560801636@s.whatsapp.net";
-  
-  const user = m.mentionedJid[0] ? m.mentionedJid[0] : await m?.quoted?.sender;
-  
-  // التحقق إذا كان المستخدم هو المالك
-  if (user === ownerNumber) {
-    return m.reply("*تبيني اطرد ابوي!*");
+const handler = async (m, {conn, usedPrefix, text}) => {
+
+  if (isNaN(text) && !text.match(/@/g)) {
+
+  } else if (isNaN(text)) {
+    var number = text.split`@`[1];
+  } else if (!isNaN(text)) {
+    var number = text;
   }
-  
-  // التحقق إذا كان المستخدم هو البوت نفسه
-  if (user === conn.user.jid) {
-    return;
-  }
-  
+
+  if (!text && !m.quoted) return conn.reply(m.chat, `منشن شخص`, m);
+  if (number.length > 13 || (number.length < 11 && number.length > 0)) return conn.reply(m.chat, '❌ رقم الهاتف غير صحيح!', m);
+
   try {
-    await conn.groupParticipantsUpdate(m.chat, [user], 'remove');
-    m.reply("*تـــم الــطرد !*");
-  } catch (error) {
-    m.reply("❌ فشل في طرد العضو، قد لا أملك الصلاحيات الكافية");
+    if (text) {
+      var user = number + '@s.whatsapp.net';
+    } else if (await m?.quoted?.sender) {
+      var user = await m?.quoted?.sender;
+    } else if (await m.mentionedJid) {
+      var user = number + '@s.whatsapp.net';
+    }
+  } catch (e) {
+  } finally {
+    conn.groupParticipantsUpdate(m.chat, [user], 'remove');
+    conn.reply(m.chat, '✅ *تمت*', m);
   }
 };
-
+handler.help = ['promote'].map((v) => 'mention ' + v);
 handler.tags = ['group'];
-handler.help = ['kick2'];
 handler.command = ['اتوكل', 'كلبطه', 'اخرس', 'طرد', 'دزمها', 'احبك', 'اكرهك', 'مغربي', 'منغولي', 'يمني'];
-handler.admin = true;
 handler.group = true;
+handler.admin = true;
 handler.botAdmin = true;
+handler.fail = null;
 export default handler;
