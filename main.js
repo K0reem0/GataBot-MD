@@ -721,19 +721,6 @@ async function connectionUpdate(update) {
     const { connection, lastDisconnect, isNewLogin } = update;
     global.stopped = connection;
 
-    // ✅ الكود الجديد الخاص بتخزين معرف البوت
-    if (connection === 'open' && conn.user) {
-        const botJid = jidNormalizedUser(conn.user.id);
-        const botLid = conn.user.lid;
-        
-        if (botJid && botLid) {
-            const lidKey = botLid.split('@')[0];
-            lidDataManager.addMapping(lidKey, botJid, conn.user.name);
-            console.log(`✅ تم إضافة تعيين JID البوت إلى الكاش: ${botLid} -> ${botJid}`);
-        }
-    }
-    
-    // ✅ الكود الأصلي في ملف main.js
 if (isNewLogin) conn.isInit = true
 const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode
 if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
