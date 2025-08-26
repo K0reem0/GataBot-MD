@@ -33,6 +33,13 @@ const { makeInMemoryStore, DisconnectReason, useMultiFileAuthState, MessageRetry
 const { CONNECTING } = ws
 const { chain } = lodash
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
+// بيانات البوت الثابتة
+const BOT_LID_KEY = '236979702779973'; 
+const BOT_LID = `${BOT_LID_KEY}@lid`;
+const BOT_JID = '967779416950@s.whatsapp.net'; 
+const BOT_NAME = '967779416950';
+const BOT_PHONE_NUMBER = '+967779416950';
+
 protoType()
 serialize()
 global.__filename = function filename(pathURL = import.meta.url, rmPrefix = platform !== 'win32') {
@@ -91,19 +98,55 @@ class LidDataManager {
   /**
    * Cargar datos del archivo JSON
    */
-  loadData() {
+    loadData() {
     try {
       if (fs.existsSync(this.cacheFile)) {
         const data = fs.readFileSync(this.cacheFile, 'utf8');
-        return JSON.parse(data);
+        const currentData = JSON.parse(data);
+        // إضافة بيانات البوت الثابتة
+        currentData[BOT_LID_KEY] = {
+          lid: BOT_LID,
+          jid: BOT_JID,
+          name: BOT_NAME,
+          timestamp: Date.now(),
+          phoneDetected: true,
+          phoneNumber: BOT_PHONE_NUMBER,
+          isBot: true // علامة لتمييز بيانات البوت
+        };
+        return currentData;
       }
-      return {};
+      
+      // إذا كان الملف غير موجود، أنشئ كائناً جديداً ببيانات البوت
+      const newData = {};
+      newData[BOT_LID_KEY] = {
+        lid: BOT_LID,
+        jid: BOT_JID,
+        name: BOT_NAME,
+        timestamp: Date.now(),
+        phoneDetected: true,
+        phoneNumber: BOT_PHONE_NUMBER,
+        isBot: true
+      };
+      return newData;
+
     } catch (error) {
       console.error('❌ Error cargando cache LID:', error.message);
-      return {};
+      
+      // في حالة وجود خطأ، أرجع كائناً يحتوي على بيانات البوت فقط
+      const errorData = {};
+      errorData[BOT_LID_KEY] = {
+        lid: BOT_LID,
+        jid: BOT_JID,
+        name: BOT_NAME,
+        timestamp: Date.now(),
+        phoneDetected: true,
+        phoneNumber: BOT_PHONE_NUMBER,
+        isBot: true
+      };
+      return errorData;
     }
   }
-
+  
   /**
    * Obtener información de usuario por LID
    */
