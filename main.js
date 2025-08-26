@@ -21,7 +21,7 @@ import { makeWASocket, protoType, serialize } from './lib/simple.js'
 import {Low, JSONFile} from 'lowdb'
 import PQueue from 'p-queue'
 import Datastore from '@seald-io/nedb';
-import { store, LidCacheManager } from './lib/store.js'
+import store from './lib/store.js'
 import readline from 'readline'
 import NodeCache from 'node-cache' 
 import { gataJadiBot } from './plugins/jadibot-serbot.js';
@@ -728,7 +728,7 @@ async function connectionUpdate(update) {
         
         if (botJid && botLid) {
             const lidKey = botLid.split('@')[0];
-            lidCacheManager.addMapping(lidKey, botJid, conn.user.name);
+            lidDataManager.addMapping(lidKey, botJid, conn.user.name);
             console.log(`✅ تم إضافة تعيين JID البوت إلى الكاش: ${botLid} -> ${botJid}`);
         }
     }
