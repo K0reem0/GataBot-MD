@@ -18,6 +18,8 @@ global.owner = [
 ["967779416950"],
 ["966560801636"]]
 
+global.botlid = "236979702779973@lid"
+global.botJid = "967779416950@s.whatsapp.net"
 global.mods = []
 global.prems = []
 
