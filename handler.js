@@ -346,14 +346,14 @@ m.exp += Math.ceil(Math.random() * 10)
 let usedPrefix
 let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
 
-const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {};
-const participants = (m.isGroup ? groupMetadata.participants : []) || [];
+const groupMetadata = m.isGroup ? { ...(conn.chats[m.chat]?.metadata || await this.groupMetadata(m.chat).catch(_ => null) || {}), ...(((conn.chats[m.chat]?.metadata || await this.groupMetadata(m.chat).catch(_ => null) || {}).participants) && { participants: ((conn.chats[m.chat]?.metadata || await this.groupMetadata(m.chat).catch(_ => null) || {}).participants || []).map(p => ({ ...p, id: p.jid, jid: p.jid, lid: p.lid })) }) } : {};
+const participants = ((m.isGroup ? groupMetadata.participants : []) || []).map(participant => ({ id: participant.jid, jid: participant.jid, lid: participant.lid, admin: participant.admin }));
 
 const numBot = (global.botlid || '').replace(/:.*/, '') || false;
 const detectwhat2 = m.sender.includes('@lid') ? `${numBot}@lid` : global.botJid;
 
 const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.jid) === m.sender) : {}) || {};
-const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.jid) === detectwhat2) : {}) || {};
+const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.jid) == this.user.jid) : {}) || {};
 
 const isRAdmin = user?.admin === 'superadmin' || false;
 const isAdmin = isRAdmin || user?.admin === 'admin' || false; // user admins?
