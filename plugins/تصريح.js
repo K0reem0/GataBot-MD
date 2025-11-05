@@ -1,7 +1,8 @@
 const handler = async (m, { conn, command, isROwner }) => {
   if (!isROwner) throw '❌ هذا الأمر مخصص للمالك فقط.';
 
-  if (!global.mods) global.mods = [];
+  // تأكيد أن المصفوفة موجودة
+  if (!Array.isArray(global.mods)) global.mods = [];
 
   // لازم رد + منشن
   if (command !== 'لائحة' && (!m.quoted || !m.mentionedJid?.length)) {
@@ -26,7 +27,6 @@ const handler = async (m, { conn, command, isROwner }) => {
       let list = '📜 *قائمة الأعضاء (من الرد فقط)*:\n\n';
       let mentions = [];
 
-      // نعرض فقط كل رقم "رد" ونتجاهل المنشن اللي بعده
       for (let i = 0; i < global.mods.length; i += 2) {
         let replied = global.mods[i];
         if (replied) {
@@ -44,7 +44,6 @@ const handler = async (m, { conn, command, isROwner }) => {
         return conn.reply(m.chat, "⚠️ لازم ترد على رسالة العضو + منشنه", m);
       }
 
-      // تحقق إذا الرد موجود مسبقاً
       if (global.mods.includes(repliedNum)) {
         return conn.sendMessage(m.chat, {
           text: `⚠️ المستخدم @${repliedNum} موجود بالفعل في القائمة.`,
@@ -52,7 +51,6 @@ const handler = async (m, { conn, command, isROwner }) => {
         }, { quoted: m });
       }
 
-      // تخزين رد وبعده المنشن (ترتيب ثابت)
       global.mods.push(repliedNum);
       global.mods.push(mentionedNum);
 
@@ -73,10 +71,9 @@ const handler = async (m, { conn, command, isROwner }) => {
         }, { quoted: m });
       }
 
-      // نحذف الرد والمنشن اللي تحته
       let idx = global.mods.indexOf(repliedNum);
       if (idx !== -1) {
-        global.mods.splice(idx, 2); // يحذف الاثنين (الرد + المنشن)
+        global.mods.splice(idx, 2);
       }
 
       return conn.sendMessage(m.chat, {
