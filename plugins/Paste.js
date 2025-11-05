@@ -6,13 +6,14 @@ const _fs = fs.promises
 let handler = async (m, { text, usedPrefix, command, __dirname }) => {
   try {
     if (!text) {
-      throw `
+      // 1. **FIXED**: Throwing a new Error object
+      throw new Error(`
 ✳️ Usage: ${usedPrefix + command} <name file> <new code>
 
 📌 Example:
         ${usedPrefix}paste main.js
         // New code content here...
-      `.trim()
+      `.trim())
     }
 
     // Split and sanitize input
@@ -22,11 +23,13 @@ let handler = async (m, { text, usedPrefix, command, __dirname }) => {
 
     // Validate input
     if (!filename || !newCode) {
-      throw 'Please provide both a file name and new code content.'
+      // 2. **FIXED**: Throwing a new Error object
+      throw new Error('Please provide both a file name and new code content.')
     }
 
     if (filename.includes('..') || filename.startsWith('/')) {
-      throw 'Invalid file name. Avoid using ".." or absolute paths.'
+      // 3. **FIXED**: Throwing a new Error object
+      throw new Error('Invalid file name. Avoid using ".." or absolute paths.')
     }
 
     const pathFile = path.join(__dirname, filename)
@@ -40,7 +43,11 @@ let handler = async (m, { text, usedPrefix, command, __dirname }) => {
     await m.reply(`✅ The file *${filename}* has been updated successfully.`)
   } catch (err) {
     console.error(err)
-    await m.reply(`❎ Error: ${err.message}`)
+    
+    // **4. FIXED**: Get the message correctly
+    // Use the error message if it exists, otherwise use the thrown object/string itself.
+    const errorMessage = err.message || String(err) 
+    await m.reply(`❎ Error: ${errorMessage}`)
   }
 }
 
