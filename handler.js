@@ -1152,6 +1152,9 @@ if (opts['gconly'] && !m.chat.endsWith('g.us')) return
 if (opts['swonly'] && m.chat !== 'status@broadcast') return
 if (typeof m.text !== 'string') m.text = ''
 
+if (process.env.MODE && process.env.MODE.toLowerCase() === 'private' && !(isROwner || isOwner || isMods))
+          return;
+  
 m.exp += Math.ceil(Math.random() * 10)
 let usedPrefix
 let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
@@ -1845,7 +1848,7 @@ id,
 text: text,
 contextInfo: {
 forwardingScore: 9999999,
-isForwarded: true,
+isForwarded: false,
 mentionedJid: [user],
 externalAdReply: {
 showAdAttribution: true,
@@ -1969,10 +1972,9 @@ extendedTextMessage: {
 text: msg,
 contextInfo: {
 externalAdReply: {
-title: lenguajeGB.smsAvisoAG().slice(0, -2),
-body: [wm, '😻 𝗦𝘂𝗽𝗲𝗿 ' + gt + ' 😻', '🌟 centergatabot.gmail.com'].getRandom(),
+title: ['❀ ─────⊰ ꪆৎ ⊱───── ❀'],
+body: ['تحذير'].getRandom(),
 thumbnail: gataImg,
-sourceUrl: accountsgb
 }
 }
 }
