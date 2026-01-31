@@ -1,28 +1,20 @@
-let handler = async (m, { conn }) => {
-    let images = [
-        'https://qu.ax/pkVKa.jpg',
-        'https://qu.ax/BUvDR.jpg',
-        'https://qu.ax/uJopD.jpg',
-        'https://qu.ax/jzNlc.jpg',
-        'https://qu.ax/rhJHx.jpg',
-        'https://qu.ax/Eadfb.jpg',
-        'https://qu.ax/ictsc.jpg',
-        'https://qu.ax/hyBnU.jpg',
-        'https://qu.ax/tSzfo.jpg',
-        'https://qu.ax/ZGjaG.jpg',
-        'https://qu.ax/upaOQ.jpg',
-        'https://qu.ax/YErqz.jpg',
-        'https://qu.ax/uTlWt.jpg',
-        'https://qu.ax/DtUSs.jpg',
-        'https://qu.ax/HYSEc.jpg',
-        'https://qu.ax/yoPbL.jpg',
-        'https://qu.ax/pzFtu.jpg',
-        'https://qu.ax/upaOQ.jpg'
-        // تقدر تضيف روابط أكثر هنا
-    ];
+import fs from 'fs'
+import path from 'path'
 
-    let imgUrl = images[Math.floor(Math.random() * images.length)];
-    
+let handler = async (m, { conn }) => {
+
+    // توليد الصور من src/1.jpg إلى src/18.jpg
+    let images = []
+    for (let i = 1; i <= 18; i++) {
+        images.push(path.join(process.cwd(), 'src', `${i}.jpg`))
+    }
+
+    // اختيار صورة عشوائية
+    let imgPath = images[Math.floor(Math.random() * images.length)]
+
+    // قراءة الصورة من الجهاز
+    let imgBuffer = fs.readFileSync(imgPath)
+
     let str = `
 *❃ ────────⊰ ❀ ⊱──────── ❃*
                         *الـمـشـرفـيـن*
@@ -187,7 +179,11 @@ let handler = async (m, { conn }) => {
 
 *❃ ────────⊰ ❀ ⊱──────── ❃*`
 
-    await conn.sendMessage(m.chat, { image: { url: imgUrl }, caption: str }, { quoted: m })
+    await conn.sendMessage(
+        m.chat,
+        { image: imgBuffer, caption: str },
+        { quoted: m }
+    )
 }
 
 handler.help = ['main']
