@@ -1,35 +1,20 @@
 import { prepareWAMessageMedia, generateWAMessageFromContent } from '@whiskeysockets/baileys';
 import fs from 'fs';
-import axios from 'axios';
 import path from 'path';
 
 let handler = async (m, { conn }) => {
-    let images = [
-        'https://qu.ax/pkVKa.jpg',
-        'https://qu.ax/BUvDR.jpg',
-        'https://qu.ax/uJopD.jpg',
-        'https://qu.ax/jzNlc.jpg',
-        'https://qu.ax/rhJHx.jpg',
-        'https://qu.ax/Eadfb.jpg',
-        'https://qu.ax/ictsc.jpg',
-        'https://qu.ax/hyBnU.jpg',
-        'https://qu.ax/tSzfo.jpg',
-        'https://qu.ax/ZGjaG.jpg',
-        'https://qu.ax/upaOQ.jpg',
-        'https://qu.ax/YErqz.jpg',
-        'https://qu.ax/uTlWt.jpg',
-        'https://qu.ax/DtUSs.jpg',
-        'https://qu.ax/HYSEc.jpg',
-        'https://qu.ax/yoPbL.jpg',
-        'https://qu.ax/pzFtu.jpg',
-        'https://qu.ax/upaOQ.jpg'
-        // تقدر تضيف روابط أكثر هنا
-    ];
 
-    let imageUrl = images[Math.floor(Math.random() * images.length)];
-    // تحميل الصورة من الرابط وحفظها مؤقتًا
-    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-    const imageBuffer = Buffer.from(response.data, 'binary');
+    // توليد الصور من src/1.jpg إلى src/18.jpg
+    let images = [];
+    for (let i = 1; i <= 18; i++) {
+        images.push(path.join(process.cwd(), 'src', `${i}.jpg`));
+    }
+
+    // اختيار صورة عشوائية
+    let imagePath = images[Math.floor(Math.random() * images.length)];
+
+    // قراءة الصورة من الجهاز
+    let imageBuffer = fs.readFileSync(imagePath);
 
     // تحضير الصورة كوسائط
     const imageMessage = await prepareWAMessageMedia(
@@ -37,13 +22,14 @@ let handler = async (m, { conn }) => {
         { upload: conn.waUploadToServer }
     );
 
-    await conn.sendMessage(m.chat, { react: { text: '🎀', key: m.key } })
-    // إنشاء الرسالة التفاعلية
+    await conn.sendMessage(m.chat, { react: { text: '🎀', key: m.key } });
+
+    // الرسالة التفاعلية
     const interactiveMessage = {
         header: {
             title: `*❀ ───────⊰ ꪆৎ ⊱─────── ❀*\n\n *مرحبا*  ⋆. 𐙚˚࿔  *${m.pushName}*  𝜗𝜚˚⋆ \n *اسمي 𐦯՞. هايسو .՞𐔌*\n\n *كيف اقدر اساعدك ᥫ᭡*\n`,
             hasMediaAttachment: true,
-            imageMessage: imageMessage.imageMessage, // استخدام الصورة
+            imageMessage: imageMessage.imageMessage,
         },
         body: {
             text: '*أختر من الأقسام ما يناسبك 𓍯𓂃*\n\n*❀ ───────⊰ ꪆৎ ⊱─────── ❀*\n',
@@ -78,20 +64,16 @@ let handler = async (m, { conn }) => {
         },
     };
 
-    // إنشاء الرسالة
     let msg = generateWAMessageFromContent(
         m.chat,
         {
             viewOnceMessage: {
-                message: {
-                    interactiveMessage,
-                },
+                message: { interactiveMessage },
             },
         },
         { userJid: conn.user.jid, quoted: m }
     );
 
-    // إرسال الرسالة
     conn.relayMessage(m.chat, msg.message, { messageId: msg.key.id });
 };
 
