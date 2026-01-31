@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 
 let handler = async (m, { conn }) => {
     let menu = `
@@ -20,35 +21,27 @@ let handler = async (m, { conn }) => {
 
 *❃ ────────⊰ ❀ ⊱──────── ❃*`
 
-    let images = [
-        'https://qu.ax/pkVKa.jpg',
-        'https://qu.ax/BUvDR.jpg',
-        'https://qu.ax/uJopD.jpg',
-        'https://qu.ax/jzNlc.jpg',
-        'https://qu.ax/rhJHx.jpg',
-        'https://qu.ax/Eadfb.jpg',
-        'https://qu.ax/ictsc.jpg',
-        'https://qu.ax/hyBnU.jpg',
-        'https://qu.ax/tSzfo.jpg',
-        'https://qu.ax/ZGjaG.jpg',
-        'https://qu.ax/upaOQ.jpg',
-        'https://qu.ax/YErqz.jpg',
-        'https://qu.ax/uTlWt.jpg',
-        'https://qu.ax/DtUSs.jpg',
-        'https://qu.ax/HYSEc.jpg',
-        'https://qu.ax/yoPbL.jpg',
-        'https://qu.ax/pzFtu.jpg',
-        'https://qu.ax/upaOQ.jpg'
-        // تقدر تضيف روابط أكثر هنا
-    ];
+    // توليد الصور من src/1.jpg إلى src/18.jpg
+    let images = []
+    for (let i = 1; i <= 18; i++) {
+        images.push(path.join(process.cwd(), 'src', `${i}.jpg`))
+    }
 
-    let imgUrl = images[Math.floor(Math.random() * images.length)];
+    // اختيار صورة عشوائية
+    let imgPath = images[Math.floor(Math.random() * images.length)]
 
     try {
-        await conn.sendMessage(m.chat, { 
-            image: { url: imgUrl }, 
-            caption: menu 
-        }, { quoted: m })
+        // قراءة الصورة من الجهاز
+        let imgBuffer = fs.readFileSync(imgPath)
+
+        await conn.sendMessage(
+            m.chat,
+            {
+                image: imgBuffer,
+                caption: menu
+            },
+            { quoted: m }
+        )
 
         console.log('Image sent successfully')
     } catch (e) {
